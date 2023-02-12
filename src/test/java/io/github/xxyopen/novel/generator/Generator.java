@@ -34,7 +34,7 @@ public class Generator {
     private static final String DATABASE_PORT = "3306";
     private static final String DATABASE_NAME = "novel";
     private static final String DATABASE_USERNAME = "root";
-    private static final String DATABASE_PASSWORD = "test123456";
+    private static final String DATABASE_PASSWORD = "root";
 
 
     public static void main(String[] args) {
