@@ -195,7 +195,7 @@ novel:
   cors:
     # 允许跨域的域名
     allow-origins:
-      - http://localhost:1024
+      - http://localhost:1025
       - http://localhost:8080
   # JWT密钥
   jwt:
@@ -211,7 +211,7 @@ novel:
     # 文件上传配置
     upload:
       # 上传路径
-      path: /Users/xiongxiaoyang/upload
+      path: /Users/novel/upload
 
 
 --- #------------------- dev 特定配置---------------------------

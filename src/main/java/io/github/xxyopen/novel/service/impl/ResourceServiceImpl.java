@@ -59,7 +59,7 @@ public class ResourceServiceImpl implements ResourceService {
         String oriName = file.getOriginalFilename();
         assert oriName != null;
         String saveFileName = IdWorker.get32UUID() + oriName.substring(oriName.lastIndexOf("."));
-        File saveFile = new File(fileUploadPath + savePath, saveFileName);
+        File saveFile = new File(new File(savePath).getAbsolutePath()+"/"+ saveFileName);
         if (!saveFile.getParentFile().exists()) {
             boolean isSuccess = saveFile.getParentFile().mkdirs();
             if (!isSuccess) {
