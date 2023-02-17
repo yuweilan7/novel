@@ -99,31 +99,57 @@ public class CacheConsts {
      * 缓存配置常量
      */
     public enum CacheEnum {
-
+        /**
+         * 首页小说推荐缓存
+         */
         HOME_BOOK_CACHE(0, HOME_BOOK_CACHE_NAME, 60 * 60 * 24, 1),
-
+        /**
+         * 最新新闻缓存
+         */
         LATEST_NEWS_CACHE(0, LATEST_NEWS_CACHE_NAME, 60 * 10, 1),
-
+        /**
+         * 小说点击榜缓存
+         */
         BOOK_VISIT_RANK_CACHE(2, BOOK_VISIT_RANK_CACHE_NAME, 60 * 60 * 6, 1),
-
+        /**
+         * 小说新书榜缓存
+         */
         BOOK_NEWEST_RANK_CACHE(0, BOOK_NEWEST_RANK_CACHE_NAME, 60 * 30, 1),
-
+        /**
+         * 小说更新榜缓存
+         */
         BOOK_UPDATE_RANK_CACHE(0, BOOK_UPDATE_RANK_CACHE_NAME, 60, 1),
-
+        /**
+         * 首页友情链接缓存
+         */
         HOME_FRIEND_LINK_CACHE(2, HOME_FRIEND_LINK_CACHE_NAME, 0, 1),
-
+        /**
+         * 小说分类列表缓存
+         */
         BOOK_CATEGORY_LIST_CACHE(0, BOOK_CATEGORY_LIST_CACHE_NAME, 0, 2),
-
+        /**
+         * 小说信息缓存
+         */
         BOOK_INFO_CACHE(0, BOOK_INFO_CACHE_NAME, 60 * 60 * 18, 500),
-
+        /**
+         * 小说章节缓存
+         */
         BOOK_CHAPTER_CACHE(0, BOOK_CHAPTER_CACHE_NAME, 60 * 60 * 6, 5000),
-
+        /**
+         * 小说内容缓存
+         */
         BOOK_CONTENT_CACHE(2, BOOK_CONTENT_CACHE_NAME, 60 * 60 * 12, 3000),
-
+        /**
+         * 最近更新小说ID列表缓存
+         */
         LAST_UPDATE_BOOK_ID_LIST_CACHE(0, LAST_UPDATE_BOOK_ID_LIST_CACHE_NAME, 60 * 60, 10),
-
+        /**
+         * 用户信息缓存
+         */
         USER_INFO_CACHE(2, USER_INFO_CACHE_NAME, 60 * 60 * 24, 10000),
-
+        /**
+         * 作家信息缓存
+         */
         AUTHOR_INFO_CACHE(2, AUTHOR_INFO_CACHE_NAME, 60 * 60 * 48, 1000);
 
         /**

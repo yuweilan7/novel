@@ -32,7 +32,7 @@ public class Generator {
      */
     private static final String DATABASE_IP = "127.0.0.1";
     private static final String DATABASE_PORT = "3306";
-    private static final String DATABASE_NAME = "novel";
+    private static final String DATABASE_NAME = "rw";
     private static final String DATABASE_USERNAME = "root";
     private static final String DATABASE_PASSWORD = "root";
 

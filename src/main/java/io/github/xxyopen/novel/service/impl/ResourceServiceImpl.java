@@ -59,6 +59,13 @@ public class ResourceServiceImpl implements ResourceService {
         String oriName = file.getOriginalFilename();
         assert oriName != null;
         String saveFileName = IdWorker.get32UUID() + oriName.substring(oriName.lastIndexOf("."));
+        /*
+        saveFile是相对路径，指向 upload/doc20170816162034_001.jpg
+        file.transferTo 方法调用时，判断如果是相对路径，则使用temp目录，为父目录
+        因此，实际保存位置为 C:\Users\AppData\Local\Temp\doc20170816162034_001.jpg
+        
+        一则，位置不对，二则没有父目录存在，因此产生上述错误。
+         */
         File saveFile = new File(new File(savePath).getAbsolutePath()+"/"+ saveFileName);
         if (!saveFile.getParentFile().exists()) {
             boolean isSuccess = saveFile.getParentFile().mkdirs();
