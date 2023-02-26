@@ -1,5 +1,6 @@
 package io.github.xxyopen.novel.dto.es;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.github.xxyopen.novel.dao.entity.BookInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZoneOffset;
+import java.util.Date;
 
 /**
  * Elasticsearch 存储小说 DTO
@@ -17,6 +19,7 @@ import java.time.ZoneOffset;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EsBookDto {
 
     /**
@@ -97,12 +100,14 @@ public class EsBookDto {
     /**
      * 最新章节更新时间
      */
-    private Long lastChapterUpdateTime;
+    private Date lastChapterUpdateTime;
 
     /**
      * 是否收费;1-收费 0-免费
      */
     private Integer isVip;
+
+    private String picUrl;
 
     public static EsBookDto build(BookInfo bookInfo){
         return EsBookDto.builder()
@@ -122,8 +127,8 @@ public class EsBookDto {
                 .workDirection(bookInfo.getWorkDirection())
                 .lastChapterId(bookInfo.getLastChapterId())
                 .lastChapterName(bookInfo.getLastChapterName())
-                .lastChapterUpdateTime(bookInfo.getLastChapterUpdateTime()
-                        .toInstant(ZoneOffset.ofHours(8)).toEpochMilli())
+                .picUrl(bookInfo.getPicUrl())
+                .lastChapterUpdateTime(bookInfo.getLastChapterUpdateTime())
                 .build();
     }
 

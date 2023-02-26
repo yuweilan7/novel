@@ -20,6 +20,11 @@ import java.util.List;
  * @author xiongxiaoyang
  * @date 2022/5/12
  */
+
+/**
+ * @RestController 可以使 Spring 自动将控制器方法返回的对象序列化为 JSON，
+ * 然后将其写入 HTTP 响应正文中
+ */
 @Tag(name = "HomeController", description = "前台门户-首页模块")
 @RestController
 @RequestMapping(ApiRouterConsts.API_FRONT_HOME_URL_PREFIX)

@@ -33,7 +33,7 @@ public class HomeBookCacheManager {
     private final BookInfoMapper bookInfoMapper;
 
     /**
-     * 查询首页小说推荐，并放入缓存中
+     * 查询首页小说->提取id->到所有小说里面寻找完整信息->提取到HomeBookRespDto返回
      */
     @Cacheable(cacheManager = CacheConsts.CAFFEINE_CACHE_MANAGER,
         value = CacheConsts.HOME_BOOK_CACHE_NAME)
@@ -41,6 +41,7 @@ public class HomeBookCacheManager {
         // 从首页小说推荐表中查询出需要推荐的小说
         QueryWrapper<HomeBook> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByAsc(DatabaseConsts.CommonColumnEnum.SORT.getName());
+        //select * from
         List<HomeBook> homeBooks = homeBookMapper.selectList(queryWrapper);
 
         // 获取推荐小说ID列表

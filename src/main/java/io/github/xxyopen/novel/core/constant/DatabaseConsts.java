@@ -8,6 +8,12 @@ import lombok.Getter;
  * @author xiongxiaoyang
  * @date 2022/5/12
  */
+
+/**
+ * 包括数据库表名、表字段名、SQL查询语句等。
+ * 这些常量的作用是方便程序中对这些数据库相关的名称和语句的使用，
+ * 并减少硬编码的情况，使得代码更加易读和易维护。
+ */
 public class DatabaseConsts {
 
     /**

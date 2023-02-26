@@ -17,6 +17,13 @@ import org.springframework.web.servlet.ModelAndView;
  * @author xiongxiaoyang
  * @date 2022/5/27
  */
+
+/**
+ * 一般情况下，Token解析拦截器会先于认证授权拦截器运行。这是因为在进行认证授权之前，
+ * 需要先解析请求中携带的Token，从而确定请求中包含的用户身份信息。
+ * 在实际应用中，通常将Token解析拦截器放置在认证授权拦截器的前面。
+ * 这样可以保证在认证授权拦截器中使用用户身份信息时，这些信息已经被正确解析并存储到相关的上下文中。
+ */
 @Component
 @RequiredArgsConstructor
 public class TokenParseInterceptor implements HandlerInterceptor {

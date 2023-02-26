@@ -15,6 +15,12 @@ import org.springframework.util.StringUtils;
  * @author xiongxiaoyang
  * @date 2022/5/18
  */
+
+/**
+ * authSSO方法是一个默认方法，它提供了一个多系统单点登录统一账号认证授权的默认实现。
+ * 这意味着，如果某个实现接口的类没有提供自己的authSSO方法，就会使用这个默认方法。
+ * 如果实现接口的类提供了自己的authSSO方法，就会使用这个类提供的方法。
+ */
 public interface AuthStrategy {
 
     /**

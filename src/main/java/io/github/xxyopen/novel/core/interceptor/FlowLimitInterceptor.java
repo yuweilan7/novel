@@ -44,6 +44,17 @@ public class FlowLimitInterceptor implements HandlerInterceptor {
     private static final String NOVEL_RESOURCE = "novelResource";
 
     static {
+        /**
+         * 流控规则有三种控制行为（ControlBehavior）：
+         * 直接拒绝（REJECT）、冷启动（WARM_UP）、匀速排队（RATE_LIMITER）
+         */
+        /**
+         * FlowRule用来限制整个应用程序中的资源访问，比如说对一个接口进行限流，限制整个系统中对该接口的并发调用量。
+         * FlowRule可以对指定的资源进行流量控制，也可以对系统中所有资源进行控制。
+         * 而ParamFlowRule则是在FlowRule的基础上，增加了对参数级别的流量控制。
+         * 它可以实现对一些参数敏感的接口进行限流，比如说根据访问接口的用户的IP地址、
+         * 请求参数等对请求进行限流。
+         */
         // 接口限流规则：所有的请求，限制每秒最多只能通过 2000 个，超出限制匀速排队
         List<FlowRule> rules = new ArrayList<>();
         FlowRule rule1 = new FlowRule();
@@ -54,7 +65,10 @@ public class FlowLimitInterceptor implements HandlerInterceptor {
         rule1.setControlBehavior(RuleConstant.CONTROL_BEHAVIOR_RATE_LIMITER);
         rules.add(rule1);
         FlowRuleManager.loadRules(rules);
-
+        /**
+         * rule2和rule3都是基于参数的流量控制规则，它们的限制条件都是基于第一个参数（paramIdx=0），
+         * 也就是请求的IP地址
+         */
         // 接口防刷规则 1：所有的请求，限制每个 IP 每秒最多只能通过 50 个，超出限制直接拒绝
         ParamFlowRule rule2 = new ParamFlowRule(NOVEL_RESOURCE)
             .setParamIdx(0)

@@ -23,12 +23,18 @@ server:
 --- #---------------------数据库配置---------------------------
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://192.168.88.10:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: root
   # ShardingSphere-JDBC 配置
-  # 配置是 ShardingSphere-JDBC 中唯一与应用开发者交互的模块，
-  # 通过它可以快速清晰的理解 ShardingSphere-JDBC 所提供的功能。
+
+
+  #开启分库分表的配置：enabled: false，表示当前不开启分库分表。
+  #日志配置：sql-show: true，表示在日志中打印SQL语句。
+  #模式配置：使用单机模式，数据持久化方式为文件持久化，路径为.shardingsphere。
+  #数据源配置：指定了一个名为ds_0的数据源，使用HikariDataSource连接池，连接的是一个MySQL数据库。
+  #规则配置：数据分片规则，针对book_content表进行分片，将数据分布在不同的数据节点上。具体规则为：根据chapter_id列进行分片，分片算法为行表达式算法，即取chapter_id除以10的余数，余数相同的数据分配到同一个数据节点上。
+  #注：$->{}语法是ShardingSphere规则配置文件中使用的一种特殊语法，用于生成动态配置。$->{0}表示获取配置文件中datasource节点下的第一个数据源，$->{0..9}表示使用数字0-9生成10个配置。这个语法可以在某些场景下帮助我们方便地生成大量配置。
   shardingsphere:
     # 是否开启分库分表
     enabled: false
@@ -53,7 +59,7 @@ spring:
       ds_0:
         type: com.zaxxer.hikari.HikariDataSource
         driverClassName: com.mysql.cj.jdbc.Driver
-        jdbcUrl: jdbc:mysql://localhost:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        jdbcUrl: jdbc:mysql://192.168.88.10:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
         username: root
         password: root
     # 规则配置
@@ -92,19 +98,19 @@ spring:
   # Elasticsearch 配置
   elasticsearch:
     # 是否开启 Elasticsearch 搜索引擎功能：true-开启 false-不开启
-    enabled: false
+    enabled: true
     uris:
-      - https://my-deployment-ce7ca3.es.us-central1.gcp.cloud.es.io:9243
+      - http://localhost:9200
     username: elastic
-    password: qTjgYVKSuExX6tWAsDuvuvwl
+    password: ckRvOZvgthiDFr5oVDF8
 
   # Spring AMQP 配置
   amqp:
     # 是否开启 Spring AMQP：true-开启 false-不开启
-    enabled: false
+    enabled: true
   # RabbitMQ 配置
   rabbitmq:
-    addresses: "amqp://guest:guest@47.106.243.172"
+    addresses: "amqp://guest:guest@127.0.0.1"
     virtual-host: novel
     template:
       retry:

@@ -11,6 +11,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author xiongxiaoyang
  * @date 2022/05/12
  */
+
+/**
+ * 指定了实体类,那么会把实体类名作为表明进行mysql的查询
+ * 但是又设置了@TableName
+ */
 public interface HomeBookMapper extends BaseMapper<HomeBook> {
 
 }

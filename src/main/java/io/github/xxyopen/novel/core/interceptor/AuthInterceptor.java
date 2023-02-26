@@ -23,6 +23,25 @@ import org.springframework.web.servlet.ModelAndView;
  * @author xiongxiaoyang
  * @date 2022/5/18
  */
+
+/**
+ * 假设当前系统的 API URL 前缀为 /api/v1，一个链接为 /api/v1/systemA/getUserInfo。
+ * 当该链接被请求时，Spring MVC 会调用该系统中所有符合 /api/v1/** 匹配规则的拦截器。
+ * 在这个系统中，有两个拦截器需要被执行：Token 解析拦截器和认证授权拦截器。
+ *
+ * 首先，Token 解析拦截器的 preHandle() 函数会被调用。该函数从 HTTP Header 中获取 JWT，
+ * 然后从请求 URI 中解析出系统名称，进而确定使用哪种认证策略进行认证。
+ * 在这个例子中，系统名称是 systemA，则使用 SystemAAuthStrategy 进行认证。
+ *
+ * 接着，认证授权拦截器的 preHandle() 函数会被调用。
+ * 该函数会从 HTTP Header 中获取 JWT，然后对 JWT 进行解析，
+ * 校验用户的身份和权限是否满足当前请求所需的要求。如果校验通过，那么请求将被允许继续执行。
+ * 如果校验不通过，那么请求将被拒绝，返回相应的错误信息。
+ *
+ * 因此，在这个例子中，Token 解析拦截器会在认证授权拦截器之前被执行，
+ * 用于解析 JWT 并确定使用哪种认证策略。认证授权拦截器则在 Token 解析拦截器之后被执行，
+ * 用于对用户的身份和权限进行认证和授权。
+ */
 @Component
 @RequiredArgsConstructor
 public class AuthInterceptor implements HandlerInterceptor {
@@ -39,6 +58,10 @@ public class AuthInterceptor implements HandlerInterceptor {
         String token = request.getHeader(SystemConfigConsts.HTTP_AUTH_HEADER_NAME);
 
         // 获取请求的 URI
+        /**
+         * 比如请求的URL为http://example.com:8080/path/to/resource?param1=value1&param2=value2#anchor，
+         * 则request.getRequestURI()返回的字符串就是/path/to/resource
+         */
         String requestUri = request.getRequestURI();
 
         // 根据请求的 URI 得到认证策略
@@ -48,6 +71,9 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         // 开始认证
         try {
+            /**
+             * 主要是Front和Author开头的链接校验,Admin还没有,其实就这三种
+             */
             authStrategy.get(authStrategyName).auth(token, requestUri);
             return HandlerInterceptor.super.preHandle(request, response, handler);
         } catch (BusinessException exception) {

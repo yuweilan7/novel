@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * <p>
@@ -103,7 +104,7 @@ public class BookInfo implements Serializable {
     /**
      * 最新章节更新时间
      */
-    private LocalDateTime lastChapterUpdateTime;
+    private Date lastChapterUpdateTime;
 
     /**
      * 是否收费;1-收费 0-免费
@@ -249,11 +250,11 @@ public class BookInfo implements Serializable {
         this.lastChapterName = lastChapterName;
     }
 
-    public LocalDateTime getLastChapterUpdateTime() {
+    public Date getLastChapterUpdateTime() {
         return lastChapterUpdateTime;
     }
 
-    public void setLastChapterUpdateTime(LocalDateTime lastChapterUpdateTime) {
+    public void setLastChapterUpdateTime(Date lastChapterUpdateTime) {
         this.lastChapterUpdateTime = lastChapterUpdateTime;
     }
 

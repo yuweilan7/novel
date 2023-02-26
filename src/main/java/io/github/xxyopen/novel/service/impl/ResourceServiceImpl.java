@@ -35,8 +35,6 @@ public class ResourceServiceImpl implements ResourceService {
 
     private final VerifyCodeManager verifyCodeManager;
 
-    @Value("${novel.file.upload.path}")
-    private String fileUploadPath;
 
     @Override
     public RestResp<ImgVerifyCodeRespDto> getImgVerifyCode() throws IOException {

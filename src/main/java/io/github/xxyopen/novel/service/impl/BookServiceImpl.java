@@ -43,13 +43,7 @@ import io.github.xxyopen.novel.service.BookService;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -269,10 +263,17 @@ public class BookServiceImpl implements BookService {
             List<UserInfo> userInfos = userDaoManager.listUsers(userIds);
             Map<Long, UserInfo> userInfoMap = userInfos.stream()
                 .collect(Collectors.toMap(UserInfo::getId, Function.identity()));
+            /**
+             * userInfoMap是用户Id对应用户信息
+             * 对于BookCommentRespDto,需要组装CommentInfo
+             */
             List<BookCommentRespDto.CommentInfo> commentInfos = bookComments.stream()
                 .map(v -> BookCommentRespDto.CommentInfo.builder()
+                    //评论id
                     .id(v.getId())
+                    //评论的用户id
                     .commentUserId(v.getUserId())
+                    //通过评论的用户id获取的信息
                     .commentUser(userInfoMap.get(v.getUserId()).getUsername())
                     .commentUserPhoto(userInfoMap.get(v.getUserId()).getUserPhoto())
                     .commentContent(v.getCommentContent())
@@ -333,16 +334,25 @@ public class BookServiceImpl implements BookService {
         return RestResp.ok();
     }
 
+    /**
+     * 这段代码实现了向小说库添加新章节，
+     * 并在添加成功后更新小说信息和发送小说信息更新的消息到消息队列的功能。
+     * 该方法使用事务进行管理，如果在方法执行过程中发生异常，则进行回滚
+     * @param dto 章节信息
+     * @return
+     */
     @Transactional(rollbackFor = Exception.class)
     @Override
     public RestResp<Void> saveBookChapter(ChapterAddReqDto dto) {
-        // 校验该作品是否属于当前作家
+        /**
+         * 根据传入的书籍 ID 查询该书籍信息，并检查该书籍是否属于当前作者。如果不属于，则返回未授权的错误信息。
+         */
         BookInfo bookInfo = bookInfoMapper.selectById(dto.getBookId());
         if (!Objects.equals(bookInfo.getAuthorId(), UserHolder.getAuthorId())) {
             return RestResp.fail(ErrorCodeEnum.USER_UN_AUTH);
         }
         // 1) 保存章节相关信息到小说章节表
-        //  a) 查询最新章节号
+        //  a)查询当前书籍的最新章节编号，并将新章节的编号设置为当前最新章节编号+1。
         int chapterNum = 0;
         QueryWrapper<BookChapter> chapterQueryWrapper = new QueryWrapper<>();
         chapterQueryWrapper.eq(DatabaseConsts.BookChapterTable.COLUMN_BOOK_ID, dto.getBookId())
@@ -352,7 +362,7 @@ public class BookServiceImpl implements BookService {
         if (Objects.nonNull(bookChapter)) {
             chapterNum = bookChapter.getChapterNum() + 1;
         }
-        //  b) 设置章节相关信息并保存
+        //  b) 将新章节信息插入到小说章节表中。
         BookChapter newBookChapter = new BookChapter();
         newBookChapter.setBookId(dto.getBookId());
         newBookChapter.setChapterName(dto.getChapterName());
@@ -363,7 +373,7 @@ public class BookServiceImpl implements BookService {
         newBookChapter.setUpdateTime(LocalDateTime.now());
         bookChapterMapper.insert(newBookChapter);
 
-        // 2) 保存章节内容到小说内容表
+        // 2) 将新章节内容插入到小说内容表中。
         BookContent bookContent = new BookContent();
         bookContent.setContent(dto.getChapterContent());
         bookContent.setChapterId(newBookChapter.getId());
@@ -372,18 +382,17 @@ public class BookServiceImpl implements BookService {
         bookContentMapper.insert(bookContent);
 
         // 3) 更新小说表最新章节信息和小说总字数信息
-        //  a) 更新小说表关于最新章节的信息
         BookInfo newBookInfo = new BookInfo();
         newBookInfo.setId(dto.getBookId());
         newBookInfo.setLastChapterId(newBookChapter.getId());
         newBookInfo.setLastChapterName(newBookChapter.getChapterName());
-        newBookInfo.setLastChapterUpdateTime(LocalDateTime.now());
+        newBookInfo.setLastChapterUpdateTime(new Date());
         newBookInfo.setWordCount(bookInfo.getWordCount() + newBookChapter.getWordCount());
         newBookChapter.setUpdateTime(LocalDateTime.now());
         bookInfoMapper.updateById(newBookInfo);
-        //  b) 清除小说信息缓存
+        //  b) 清除书籍信息缓存。
         bookInfoCacheManager.evictBookInfoCache(dto.getBookId());
-        //  c) 发送小说信息更新的 MQ 消息
+        //  c) 向消息队列发送书籍信息更新的消息
         amqpMsgManager.sendBookChangeMsg(dto.getBookId());
         return RestResp.ok();
     }

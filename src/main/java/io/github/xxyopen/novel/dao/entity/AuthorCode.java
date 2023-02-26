@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
  * @author xiongxiaoyang
  * @date 2022/05/11
  */
+
+/**
+ * DAO 用于封装与数据源的交互，而 DTO 用于在不同的层之间传输数据。
+ */
 @TableName("author_code")
 public class AuthorCode implements Serializable {
 

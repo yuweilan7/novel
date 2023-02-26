@@ -24,7 +24,7 @@ public class AmqpMsgManager {
     private boolean amqpEnabled;
 
     /**
-     * 发送小说信息改变消息
+     * 发送小说信息改变消息,生产者
      */
     public void sendBookChangeMsg(Long bookId) {
         if (amqpEnabled) {
@@ -35,6 +35,10 @@ public class AmqpMsgManager {
     private void sendAmqpMessage(AmqpTemplate amqpTemplate, String exchange, String routingKey,
         Object message) {
         // 如果在事务中则在事务执行完成后再发送，否则可以直接发送
+        /**
+         * 这个if语句用于检查当前是否有活动事务。
+         * 如果有，就将消息发送操作添加到事务的同步管理器中，在事务完成后再发送。否则，直接发送消息。
+         */
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
             TransactionSynchronizationManager.registerSynchronization(
                 new TransactionSynchronization() {

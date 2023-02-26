@@ -74,7 +74,7 @@ public class BookRankCacheManager {
             respDto.setPicUrl(v.getPicUrl());
             respDto.setBookDesc(v.getBookDesc());
             respDto.setLastChapterName(v.getLastChapterName());
-            respDto.setLastChapterUpdateTime(v.getLastChapterUpdateTime());
+            respDto.setLastChapterUpdateTime(v.getUpdateTime());
             respDto.setWordCount(v.getWordCount());
             return respDto;
         }).toList();

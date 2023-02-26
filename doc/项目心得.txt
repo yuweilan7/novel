@@ -6,6 +6,94 @@
 ⑤无单点故障：Caffeine 是本地缓存，不需要像 Redis 那样部署在服务器上，所以不存在单点故障问题，而 Redis 如果部署在单个服务器上，就会存在单点故障的问题。
 总之，Caffeine 相对于 Redis 的优势主要在于速度快、降低网络负载、数据一致性和无需安装配置等方面，但是它也有一定的局限性，比如不支持分布式部署、数据容量受限等。因此在实际应用中需要根据具体需求进行选择。
 
+2.shardingsphere集群配置
+  shardingsphere:
+    # 是否开启分库分表
+    enabled: false
+    props:
+      # 是否在日志中打印 SQL
+      sql-show: true
+    # 模式配置
+    mode:
+      # 单机模式
+      type: Cluster
+      repository:
+        # 文件持久化
+        type: File
+        props:
+          # 元数据存储路径
+          path: .shardingsphere
+      # 使用本地配置覆盖持久化配置
+      overwrite: true
+    # 数据源配置
+    datasource:
+      names: ds_0, ds_1, ds_2
+      ds_0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.88.10:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: root
+    ds_1:
+            type: com.zaxxer.hikari.HikariDataSource
+            driverClassName: com.mysql.cj.jdbc.Driver
+            jdbcUrl: jdbc:mysql://192.168.88.11:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+            username: root
+            password: root
+    ds_2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.88.12:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: root
+    # 规则配置
+    rules:
+      # 数据分片
+      sharding:
+        tables:
+          # book_content 表
+          book_content:
+            # 数据节点
+            actual-data-nodes: ds_$->{0..2}.book_content$->{0..9}
+            # 分表策略
+            table-strategy:
+              standard:
+                # 分片列名称
+                sharding-column: chapter_id
+                # 分片算法名称
+                sharding-algorithm-name: bookContentSharding
+        sharding-algorithms:
+          bookContentSharding:
+            # 行表达式分片算法，使用 Groovy 的表达式，提供对 SQL 语句中的 = 和 IN 的分片操作支持
+            type: INLINE
+            props:
+              # 分片算法的行表达式
+              algorithm-expression: book_content$->{chapter_id % 30 / 10}
 
 
+如果您使用ShardingJDBC的集群模式，但是您的MySQL数据库没有使用集群，则可能会遇到以下一些问题：
 
+单点故障问题：如果您的MySQL数据库没有使用集群，而且只有一个实例，那么这个实例如果出现故障，整个系统将无法访问该实例存储的数据。
+
+数据不一致问题：如果您使用ShardingJDBC将查询请求分散到多个MySQL实例中，但这些实例之间没有数据同步机制，那么就可能出现数据不一致的情况。例如，如果您向其中一个MySQL实例写入数据，但是另一个实例没有同步这些数据，则会导致查询结果不一致的问题。
+
+性能问题：如果您使用ShardingJDBC将查询请求分散到多个MySQL实例中，但这些实例之间没有负载均衡机制，那么就可能出现某些实例的负载过高，而其他实例的负载过低的情况，导致系统整体性能下降。
+
+因此，建议您在使用ShardingJDBC的集群模式时，同时考虑使用MySQL集群或其他高可用性解决方案，以确保数据的一致性和高可用性，并且需要在ShardingJDBC的配置文件中指定正确的MySQL集群地址和端口。
+
+3.关于两级缓存的问题
+通常来说，Caffeine 和 Redis 这两种缓存都有自己的优点和适用场景。
+一般情况下，建议将频繁被读取的数据放在 Caffeine 中缓存，
+将访问频率较低但数据量较大的数据放在 Redis 中缓存。
+
+具体来说，在小说网站中，可以考虑将以下类型的数据放在 Caffeine 中缓存：
+
+网站的基本配置信息，例如网站的标题、描述等信息；
+经常访问的热门小说列表，例如首页推荐、热门排行榜等信息；
+用户的基本信息，例如用户的昵称、头像等信息。
+同时，将以下类型的数据放在 Redis 中缓存可以更好地提高缓存的命中率和扩展性：
+
+小说的详细信息，例如小说的作者、标签、简介、章节列表等信息；
+用户的个人数据，例如用户的阅读记录、书架等信息；
+非实时更新的业务数据，例如小说的评价、评论等信息。
+需要注意的是，这里只是建议将哪些类型的数据放在哪个缓存中，具体的实现方案还需要根据具体的业务场景和系统架构进行调整和优化。同时，Caffeine 和 Redis 的配置参数、缓存策略等也需要根据具体的场景进行合理的设置和调整。
