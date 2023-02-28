@@ -15,6 +15,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.common.TemplateParserContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -79,8 +80,9 @@ public class LockAspect {
             return arg.toString();
         }
         ExpressionParser parser = new SpelExpressionParser();
-        Expression expression = parser.parseExpression(expr, new TemplateParserContext());
-        return expression.getValue(arg, String.class);
+        StandardEvaluationContext context = new StandardEvaluationContext((arg));
+        Expression expression = parser.parseExpression(expr);
+        return expression.getValue(context, String.class);
     }
 
 }

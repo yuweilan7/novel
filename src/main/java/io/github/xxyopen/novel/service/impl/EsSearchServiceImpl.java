@@ -10,10 +10,15 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import co.elastic.clients.json.JsonData;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import io.github.xxyopen.novel.core.annotation.Lock;
 import io.github.xxyopen.novel.core.common.resp.PageRespDto;
 import io.github.xxyopen.novel.core.common.resp.RestResp;
+import io.github.xxyopen.novel.core.constant.CacheConsts;
 import io.github.xxyopen.novel.core.constant.EsConsts;
 import io.github.xxyopen.novel.dto.es.EsBookDto;
 import io.github.xxyopen.novel.dto.req.BookSearchReqDto;
@@ -22,12 +27,19 @@ import io.github.xxyopen.novel.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.curator.shaded.com.google.common.hash.BloomFilter;
+import org.apache.curator.shaded.com.google.common.hash.Funnels;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
+import static io.vertx.mysqlclient.impl.datatype.DataType.JSON;
 
 /**
  * Elasticsearch 搜索 服务实现类
@@ -43,10 +55,19 @@ public class EsSearchServiceImpl implements SearchService {
 
     private final ElasticsearchClient esClient;
 
+
+    private final StringRedisTemplate stringRedisTemplate;
+
+
     @SneakyThrows
     @Override
+    @Lock(prefix = "EsSearch")
     public RestResp<PageRespDto<BookInfoRespDto>> searchBooks(BookSearchReqDto condition) {
 
+        String cacheResult = stringRedisTemplate.opsForValue().get(condition.toString());
+        if (cacheResult != null) {
+            return JSONObject.parseObject(cacheResult, new TypeReference<RestResp<PageRespDto<BookInfoRespDto>>>() {});
+        }
         SearchResponse<EsBookDto> response = esClient.search(s -> {
 
                 SearchRequest.Builder searchBuilder = s.index(EsConsts.BookIndex.INDEX_NAME);
@@ -74,7 +95,10 @@ public class EsSearchServiceImpl implements SearchService {
         );
 
         TotalHits total = response.hits().total();
-
+        if(total.value() == 0) {
+            stringRedisTemplate.opsForValue().set(condition.toString(), JSONObject.toJSONString(PageRespDto.empty()));
+            return RestResp.ok(PageRespDto.empty());
+        }
         List<BookInfoRespDto> list = new ArrayList<>();
         List<Hit<EsBookDto>> hits = response.hits().hits();
         // 类型推断 var 非常适合 for 循环，JDK 10 引入，JDK 11 改进
@@ -101,8 +125,10 @@ public class EsSearchServiceImpl implements SearchService {
                 .build());
         }
         assert total != null;
-        return RestResp.ok(
+        RestResp<PageRespDto<BookInfoRespDto>> result = RestResp.ok(
             PageRespDto.of(condition.getPageNum(), condition.getPageSize(), total.value(), list));
+        stringRedisTemplate.opsForValue().set(condition.toString(), JSONObject.toJSONString(result), 5, TimeUnit.MINUTES);
+        return result;
 
     }
 

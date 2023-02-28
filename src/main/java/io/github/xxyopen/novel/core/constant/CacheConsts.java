@@ -95,6 +95,7 @@ public class CacheConsts {
      */
     public static final String AUTHOR_INFO_CACHE_NAME = "authorInfoCache";
 
+    public static final int CACHE_NULL_TTL = 2;
     /**
      * 缓存配置常量
      */
@@ -102,7 +103,7 @@ public class CacheConsts {
         /**
          * 首页小说推荐缓存
          */
-        HOME_BOOK_CACHE(0, HOME_BOOK_CACHE_NAME, 60 * 60 * 24, 1),
+        HOME_BOOK_CACHE(0, HOME_BOOK_CACHE_NAME, 60 * 60 , 1),
         /**
          * 最新新闻缓存
          */
@@ -114,7 +115,7 @@ public class CacheConsts {
         /**
          * 小说新书榜缓存
          */
-        BOOK_NEWEST_RANK_CACHE(0, BOOK_NEWEST_RANK_CACHE_NAME, 60 * 30, 1),
+        BOOK_NEWEST_RANK_CACHE(0, BOOK_NEWEST_RANK_CACHE_NAME, 60 * 60 * 6, 1),
         /**
          * 小说更新榜缓存
          */

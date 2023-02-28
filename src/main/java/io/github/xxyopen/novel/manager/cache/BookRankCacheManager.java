@@ -1,6 +1,7 @@
 package io.github.xxyopen.novel.manager.cache;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.github.xxyopen.novel.core.annotation.Lock;
 import io.github.xxyopen.novel.core.constant.CacheConsts;
 import io.github.xxyopen.novel.core.constant.DatabaseConsts;
 import io.github.xxyopen.novel.dao.entity.BookInfo;
@@ -28,6 +29,7 @@ public class BookRankCacheManager {
      */
     @Cacheable(cacheManager = CacheConsts.REDIS_CACHE_MANAGER,
         value = CacheConsts.BOOK_VISIT_RANK_CACHE_NAME)
+    @Lock(prefix = "visit_rank")
     public List<BookRankRespDto> listVisitRankBooks() {
         QueryWrapper<BookInfo> bookInfoQueryWrapper = new QueryWrapper<>();
         bookInfoQueryWrapper.orderByDesc(DatabaseConsts.BookTable.COLUMN_VISIT_COUNT);
@@ -39,6 +41,7 @@ public class BookRankCacheManager {
      */
     @Cacheable(cacheManager = CacheConsts.CAFFEINE_CACHE_MANAGER,
         value = CacheConsts.BOOK_NEWEST_RANK_CACHE_NAME)
+    @Lock(prefix = "newest_rank")
     public List<BookRankRespDto> listNewestRankBooks() {
         QueryWrapper<BookInfo> bookInfoQueryWrapper = new QueryWrapper<>();
         bookInfoQueryWrapper
@@ -52,6 +55,7 @@ public class BookRankCacheManager {
      */
     @Cacheable(cacheManager = CacheConsts.CAFFEINE_CACHE_MANAGER,
         value = CacheConsts.BOOK_UPDATE_RANK_CACHE_NAME)
+    @Lock(prefix = "update_rank")
     public List<BookRankRespDto> listUpdateRankBooks() {
         QueryWrapper<BookInfo> bookInfoQueryWrapper = new QueryWrapper<>();
         bookInfoQueryWrapper

@@ -1,5 +1,6 @@
 package io.github.xxyopen.novel.core.common.resp;
 
+import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 
@@ -44,6 +45,9 @@ public class PageRespDto<T> {
 
     public static <T> PageRespDto<T> of(long pageNum, long pageSize, long total, List<T> list) {
         return new PageRespDto<>(pageNum, pageSize, total, list);
+    }
+    public static <T> PageRespDto<T> empty() {
+        return new PageRespDto<>(0, 0, 0,Collections.emptyList());
     }
 
     /**

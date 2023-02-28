@@ -1,0 +1,90 @@
+  main:
+    allow-bean-definition-overriding: true
+  # ShardingSphere-JDBC 配置
+
+
+  #开启分库分表的配置：enabled: false，表示当前不开启分库分表。
+  #日志配置：sql-show: true，表示在日志中打印SQL语句。
+  #模式配置：使用单机模式，数据持久化方式为文件持久化，路径为.shardingsphere。
+  #数据源配置：指定了一个名为master的数据源，使用HikariDataSource连接池，连接的是一个MySQL数据库。
+  #规则配置：数据分片规则，针对book_content表进行分片，将数据分布在不同的数据节点上。具体规则为：根据chapter_id列进行分片，分片算法为行表达式算法，即取chapter_id除以10的余数，余数相同的数据分配到同一个数据节点上。
+  #注：$->{}语法是ShardingSphere规则配置文件中使用的一种特殊语法，用于生成动态配置。$->{0}表示获取配置文件中datasource节点下的第一个数据源，$->{0..9}表示使用数字0-9生成10个配置。这个语法可以在某些场景下帮助我们方便地生成大量配置。
+  shardingsphere:
+    # 是否开启分库分表
+    enabled: true
+    props:
+      # 是否在日志中打印 SQL
+      sql-show: true
+    # 模式配置
+    mode:
+      # 单机模式
+      type: Cluster
+      repository:
+        # 文件持久化
+        type: File
+        props:
+          # 元数据存储路径
+          path: .shardingsphere
+      # 使用本地配置覆盖持久化配置
+      overwrite: true
+    # 数据源配置
+    datasource:
+      names: master, node1, node2
+      master:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.88.10:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: root
+    node1:
+      type: com.zaxxer.hikari.HikariDataSource
+      driverClassName: com.mysql.cj.jdbc.Driver
+      jdbcUrl: jdbc:mysql://192.168.88.11:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+    node2:
+      type: com.zaxxer.hikari.HikariDataSource
+      driverClassName: com.mysql.cj.jdbc.Driver
+      jdbcUrl: jdbc:mysql://192.168.88.12:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+    # 规则配置
+    masterslave:
+      # 读写分离配置
+      load-balance-algorithm-type: round_robin
+      # 最终的数据源名称
+      name: dataSource
+      # 主库数据源名称
+      master-data-source-name: master
+      # 从库数据源名称
+      slave-data-source-names: node1,node2
+
+    rules:
+      # 数据分片
+      sharding:
+        tables:
+          # book_content 表
+          book_content:
+            # 数据节点
+            actual-data-nodes: ds_$->{0..2}.book_content$->{0..9}
+            # 分表策略
+            table-strategy:
+              standard:
+                # 分片列名称
+                sharding-column: chapter_id
+                # 分片算法名称
+                sharding-algorithm-name: bookContentSharding
+        sharding-algorithms:
+          bookContentSharding:
+            # 行表达式分片算法，使用 Groovy 的表达式，提供对 SQL 语句中的 = 和 IN 的分片操作支持
+            type: INLINE
+            props:
+              # 分片算法的行表达式
+              algorithm-expression: book_content$->{chapter_id % 30 / 10}
+
+
+注意配置
+①主库：show master status
+②从库：change master to master_host='192.168.88.10',master_user='rep1',master_password='123456',master_log_file='mysql-bin.000055',master_log_pos=157;
+用到master status的参数
+③show slave status查看是否启动成功

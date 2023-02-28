@@ -12,6 +12,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -31,6 +32,7 @@ public class RabbitQueueListener {
 
     private final ElasticsearchClient esClient;
 
+
     /**
      * 监听小说信息改变的 ES 更新队列，更新最新小说信息到 ES
      */
@@ -45,5 +47,7 @@ public class RabbitQueueListener {
         );
         log.info("Indexed with version " + response.version());
     }
+
+
 
 }

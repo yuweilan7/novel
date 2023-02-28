@@ -5,6 +5,7 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2022/5/25
  */
 @Configuration
+@EnableRabbit
 public class AmqpConfig {
 
     /**
@@ -39,6 +41,16 @@ public class AmqpConfig {
     @Bean
     public Binding esBookUpdateQueueBinding() {
         return BindingBuilder.bind(esBookUpdateQueue()).to(bookChangeExchange());
+    }
+
+    @Bean
+    public Queue redisUpdateQueue() {
+        return new Queue(AmqpConsts.BookChangeMq.QUEUE_REDIS_UPDATE);
+    }
+
+    @Bean
+    public Binding redisUpdateBinding() {
+        return BindingBuilder.bind(redisUpdateQueue()).to(bookChangeExchange());
     }
 
 }
