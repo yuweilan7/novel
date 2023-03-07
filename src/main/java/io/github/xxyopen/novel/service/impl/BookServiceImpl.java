@@ -392,6 +392,16 @@ public class BookServiceImpl implements BookService {
         bookInfoMapper.updateById(newBookInfo);
         //  b) 清除书籍信息缓存。
         bookInfoCacheManager.evictBookInfoCache(dto.getBookId());
+        boolean cacheDeleted = false;
+        try {
+            bookInfoCacheManager.evictBookInfoCache(dto.getBookId());
+            cacheDeleted = true;
+        } catch (Exception e) {
+            log.warn("Failed to delete book info cache:{}",e.getMessage());
+        }
+        if (!cacheDeleted) {
+            log.warn("Book Info cache may not be deleted.");
+        }
         //  c) 向消息队列发送书籍信息更新的消息
         amqpMsgManager.sendBookChangeMsg(dto.getBookId());
         return RestResp.ok();

@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
  * @date 2022/5/25
  */
 @Configuration
-@EnableRabbit
 public class AmqpConfig {
 
     /**

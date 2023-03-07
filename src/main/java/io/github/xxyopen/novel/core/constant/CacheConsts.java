@@ -95,7 +95,6 @@ public class CacheConsts {
      */
     public static final String AUTHOR_INFO_CACHE_NAME = "authorInfoCache";
 
-    public static final int CACHE_NULL_TTL = 2;
     /**
      * 缓存配置常量
      */

@@ -24,7 +24,8 @@ import java.lang.reflect.Parameter;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 分布式锁 切面
+ * 基于Spring AOP实现的分布式锁的切面类，其作用是对带有@Lock注解的方法进行拦截，
+ * 实现分布式锁的控制，避免并发问题。
  *
  * @author xiongxiaoyang
  * @date 2022/6/20
@@ -46,6 +47,8 @@ public class LockAspect {
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         Method targetMethod = methodSignature.getMethod();
         Lock lock = targetMethod.getAnnotation(Lock.class);
+
+        //buildLockKey方法用于生成锁的key
         String lockKey = KEY_PREFIX + buildLockKey(lock.prefix(), targetMethod,
             joinPoint.getArgs());
         RLock rLock = redissonClient.getLock(lockKey);
@@ -80,9 +83,8 @@ public class LockAspect {
             return arg.toString();
         }
         ExpressionParser parser = new SpelExpressionParser();
-        StandardEvaluationContext context = new StandardEvaluationContext((arg));
-        Expression expression = parser.parseExpression(expr);
-        return expression.getValue(context, String.class);
+        Expression expression = parser.parseExpression(expr,new TemplateParserContext());
+        return expression.getValue(arg, String.class);
     }
 
 }

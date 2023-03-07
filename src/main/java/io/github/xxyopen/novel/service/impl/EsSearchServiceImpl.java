@@ -66,7 +66,8 @@ public class EsSearchServiceImpl implements SearchService {
 
         String cacheResult = stringRedisTemplate.opsForValue().get(condition.toString());
         if (cacheResult != null) {
-            return JSONObject.parseObject(cacheResult, new TypeReference<RestResp<PageRespDto<BookInfoRespDto>>>() {});
+            return JSONObject.parseObject(cacheResult, new TypeReference<>() {
+            });
         }
         SearchResponse<EsBookDto> response = esClient.search(s -> {
 

@@ -1,5 +1,7 @@
 package io.github.xxyopen.novel.manager.cache;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.github.xxyopen.novel.core.annotation.Lock;
 import io.github.xxyopen.novel.core.constant.CacheConsts;
@@ -10,6 +12,7 @@ import io.github.xxyopen.novel.dto.resp.BookRankRespDto;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class BookRankCacheManager {
 
     private final BookInfoMapper bookInfoMapper;
-
+    private final StringRedisTemplate stringRedisTemplate;
     /**
      * 查询小说点击榜列表，并放入缓存中
      */

@@ -54,7 +54,8 @@ public class WebConfig implements WebMvcConfigurer {
             // 放行登录注册相关请求接口
             .excludePathPatterns(ApiRouterConsts.API_FRONT_USER_URL_PREFIX + "/register",
                 ApiRouterConsts.API_FRONT_USER_URL_PREFIX + "/login",
-                ApiRouterConsts.API_ADMIN_URL_PREFIX + "/login")
+                ApiRouterConsts.API_ADMIN_URL_PREFIX + "/login"
+                )
             .order(2);
 
         // Token 解析拦截器

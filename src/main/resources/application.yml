@@ -54,7 +54,7 @@ spring:
       sql-show: true
     # 模式配置
     mode:
-      # 单机模式
+      # 集群模式
       type: Cluster
       repository:
         # 文件持久化
@@ -103,7 +103,7 @@ spring:
           # book_content 表
           book_content:
             # 数据节点
-            actual-data-nodes: ds_$->{0..2}.book_content$->{0..9}
+            actual-data-nodes: ds_$->{1..2}.book_content$->{0..9}
             # 分表策略
             table-strategy:
               standard:
@@ -117,7 +117,7 @@ spring:
             type: INLINE
             props:
               # 分片算法的行表达式
-              algorithm-expression: book_content$->{chapter_id % 30 / 10}
+              algorithm-expression: book_content$->{(chapter_id / 10) % 2 + 1}.book_content_$->{chapter_id % 10}
 
 --- #---------------------中间件配置---------------------------
 spring:
@@ -140,7 +140,7 @@ spring:
   # Spring AMQP 配置
   amqp:
     # 是否开启 Spring AMQP：true-开启 false-不开启
-    enabled: true
+    enabled: false
   # RabbitMQ 配置
   rabbitmq:
     addresses: "amqp://guest:guest@127.0.0.1"
