@@ -66,25 +66,25 @@ spring:
       overwrite: true
     # 数据源配置
     datasource:
-      names: master, node1, node2
-      master:
+      names: ds_0,ds_1,ds_2
+      ds_0:
         type: com.zaxxer.hikari.HikariDataSource
         driverClassName: com.mysql.cj.jdbc.Driver
         jdbcUrl: jdbc:mysql://192.168.88.10:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
         username: root
         password: root
-    node1:
-      type: com.zaxxer.hikari.HikariDataSource
-      driverClassName: com.mysql.cj.jdbc.Driver
-      jdbcUrl: jdbc:mysql://192.168.88.11:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-      username: root
-      password: root
-    node2:
-      type: com.zaxxer.hikari.HikariDataSource
-      driverClassName: com.mysql.cj.jdbc.Driver
-      jdbcUrl: jdbc:mysql://192.168.88.12:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-      username: root
-      password: root
+      ds_1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.88.11:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: root
+      ds_2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.cj.jdbc.Driver
+        jdbcUrl: jdbc:mysql://192.168.88.12:3306/novel?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+        username: root
+        password: root
     # 规则配置
     masterslave:
       # 读写分离配置
@@ -92,9 +92,9 @@ spring:
       # 最终的数据源名称
       name: dataSource
       # 主库数据源名称
-      master-data-source-name: master
+      master-data-source-name: ds_0
       # 从库数据源名称
-      slave-data-source-names: node1,node2
+      slave-data-source-names: ds_1,ds_2
 
     rules:
       # 数据分片
@@ -103,7 +103,7 @@ spring:
           # book_content 表
           book_content:
             # 数据节点
-            actual-data-nodes: ds_$->{1..2}.book_content$->{0..9}
+            actual-data-nodes: ds_0.book_content,ds_$->{1..2}.book_content$->{0..9}
             # 分表策略
             table-strategy:
               standard:
@@ -111,13 +111,29 @@ spring:
                 sharding-column: chapter_id
                 # 分片算法名称
                 sharding-algorithm-name: bookContentSharding
+          # book_chapter 表
+          book_chapter:
+            actual-data-nodes: ds_0.book_chapter,ds_$->{1..2}.book_chapter$->{0..9}
+            # 分表策略
+            table-strategy:
+              standard:
+                # 分片列名称
+                sharding-column: id
+                # 分片算法名称
+                sharding-algorithm-name: bookChapterSharding
         sharding-algorithms:
           bookContentSharding:
             # 行表达式分片算法，使用 Groovy 的表达式，提供对 SQL 语句中的 = 和 IN 的分片操作支持
             type: INLINE
             props:
               # 分片算法的行表达式
-              algorithm-expression: book_content$->{(chapter_id / 10) % 2 + 1}.book_content_$->{chapter_id % 10}
+              algorithm-expression: ds_$->{(chapter_id / 10) % 2 + 1}.book_content_$->{chapter_id % 10}
+          bookChapterSharding:
+            # 行表达式分片算法，使用 Groovy 的表达式，提供对 SQL 语句中的 = 和 IN 的分片操作支持
+            type: INLINE
+            props:
+              # 分片算法的行表达式
+              algorithm-expression: ds_$->{(id / 10) % 2 + 1}.book_chapter_$->{id % 10}
 
 --- #---------------------中间件配置---------------------------
 spring:

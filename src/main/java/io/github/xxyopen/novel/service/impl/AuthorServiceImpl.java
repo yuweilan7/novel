@@ -52,16 +52,7 @@ public class AuthorServiceImpl implements AuthorService {
         // 清除作家缓存
         authorInfoCacheManager.evictAuthorCache();
 
-        boolean cacheDeleted = false;
-        try {
-            authorInfoCacheManager.evictAuthorCache();
-            cacheDeleted = true;
-        } catch (Exception e) {
-            log.warn("Failed to delete author cache:{}",e.getMessage());
-        }
-        if (!cacheDeleted) {
-            log.warn("Author cache may not be deleted.");
-        }
+
         return RestResp.ok();
     }
 

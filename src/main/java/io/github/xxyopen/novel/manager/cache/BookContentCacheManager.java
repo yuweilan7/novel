@@ -6,6 +6,7 @@ import io.github.xxyopen.novel.core.constant.DatabaseConsts;
 import io.github.xxyopen.novel.dao.entity.BookContent;
 import io.github.xxyopen.novel.dao.mapper.BookContentMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,12 @@ public class BookContentCacheManager {
             .last(DatabaseConsts.SqlEnum.LIMIT_1.getSql());
         BookContent bookContent = bookContentMapper.selectOne(contentQueryWrapper);
         return bookContent.getContent();
+    }
+
+    @CacheEvict(cacheManager = CacheConsts.CAFFEINE_CACHE_MANAGER,
+        value = CacheConsts.BOOK_CONTENT_CACHE_NAME)
+    public void evictBookContentCache() {
+        // 调用此方法自动清除小说信息的缓存
     }
 
 

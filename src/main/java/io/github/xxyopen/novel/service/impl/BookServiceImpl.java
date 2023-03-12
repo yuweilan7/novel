@@ -48,6 +48,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,7 +85,7 @@ public class BookServiceImpl implements BookService {
 
     private final UserDaoManager userDaoManager;
 
-    private final AmqpMsgManager amqpMsgManager;
+    private final AsyncTaskExecutor taskExecutor;
 
     private static final Integer REC_BOOK_COUNT = 4;
 
@@ -391,19 +392,17 @@ public class BookServiceImpl implements BookService {
         newBookChapter.setUpdateTime(LocalDateTime.now());
         bookInfoMapper.updateById(newBookInfo);
         //  b) 清除书籍信息缓存。
-        bookInfoCacheManager.evictBookInfoCache(dto.getBookId());
-        boolean cacheDeleted = false;
-        try {
-            bookInfoCacheManager.evictBookInfoCache(dto.getBookId());
-            cacheDeleted = true;
-        } catch (Exception e) {
-            log.warn("Failed to delete book info cache:{}",e.getMessage());
-        }
-        if (!cacheDeleted) {
-            log.warn("Book Info cache may not be deleted.");
-        }
-        //  c) 向消息队列发送书籍信息更新的消息
-        amqpMsgManager.sendBookChangeMsg(dto.getBookId());
+        taskExecutor.execute(() -> {
+            try {
+                Thread.sleep(1000);
+                bookInfoCacheManager.evictBookInfoCache();
+                bookChapterCacheManager.evictBookChapterCache();
+                bookContentCacheManager.evictBookContentCache();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
         return RestResp.ok();
     }
 

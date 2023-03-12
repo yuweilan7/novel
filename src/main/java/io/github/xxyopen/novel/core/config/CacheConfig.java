@@ -91,12 +91,12 @@ public class CacheConfig {
             if (c.isRemote()) {
                 if (c.getTtl() > 0) {
                     cacheMap.put(c.getName(),
-                        RedisCacheConfiguration.defaultCacheConfig().disableCachingNullValues()
+                        RedisCacheConfiguration.defaultCacheConfig()
                             .prefixCacheNameWith(CacheConsts.REDIS_CACHE_PREFIX)
                             .entryTtl(Duration.ofSeconds(c.getTtl())));
                 } else {
                     cacheMap.put(c.getName(),
-                        RedisCacheConfiguration.defaultCacheConfig().disableCachingNullValues()
+                        RedisCacheConfiguration.defaultCacheConfig()
                             .prefixCacheNameWith(CacheConsts.REDIS_CACHE_PREFIX));
                 }
             }
