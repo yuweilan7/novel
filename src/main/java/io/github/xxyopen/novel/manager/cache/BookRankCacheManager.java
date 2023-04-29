@@ -46,7 +46,7 @@ public class BookRankCacheManager {
             QueryWrapper<BookInfo> bookInfoQueryWrapper = new QueryWrapper<>();
             bookInfoQueryWrapper
                 .gt(DatabaseConsts.BookTable.COLUMN_WORD_COUNT, 0)
-                .orderByDesc(DatabaseConsts.BookTable.COLUMN_WORD_COUNT)
+                .orderByDesc(DatabaseConsts.BookTable.COLUMN_VISIT_COUNT)
                 .last(DatabaseConsts.SqlEnum.LIMIT_30.getSql());
             List<BookInfo> bookInfoList = bookInfoMapper.selectList(bookInfoQueryWrapper);
             if (CollectionUtils.isEmpty(bookInfoList)) {
@@ -58,12 +58,11 @@ public class BookRankCacheManager {
                 BookInfo bookInfo = bookInfoList.get(i);
                 ZSetOperations.TypedTuple<String> tuple = new DefaultTypedTuple<>(
                     String.valueOf(bookInfo.getId()),
-                    Double.valueOf(bookInfo.getWordCount())
+                    Double.valueOf(bookInfo.getVisitCount())
                 );
                 tuples.add(tuple);
             }
             redisTemplate.opsForZSet().add(CacheConsts.BOOK_VISIT_RANK_CACHE_NAME, tuples);
-            redisTemplate.expire(CacheConsts.BOOK_VISIT_RANK_CACHE_NAME, 1, TimeUnit.HOURS);
             rankData = redisTemplate.opsForZSet().reverseRangeWithScores(CacheConsts.BOOK_VISIT_RANK_CACHE_NAME, 0, 29);
         }
         // 将排行榜数据转化为 DTO
