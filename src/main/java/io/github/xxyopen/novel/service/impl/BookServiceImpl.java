@@ -51,6 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.task.AsyncTaskExecutor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -161,7 +162,6 @@ public class BookServiceImpl implements BookService {
         return RestResp.ok(respDtoList);
     }
 
-    @Override
     public RestResp<Void> addVisitCount(Long bookId) {
         if (redisTemplate.opsForZSet().rank(CacheConsts.BOOK_VISIT_RANK_CACHE_NAME, String.valueOf(bookId)) != null) {
             // 如果书籍在排行榜中，直接在 Redis 中增加阅读量
@@ -170,40 +170,25 @@ public class BookServiceImpl implements BookService {
             // 如果书籍不在排行榜中，使用数据库操作进行增加
             bookInfoMapper.addVisitCount(bookId);
         }
-
-        if (shouldPersistToDatabase()) {
-            // 持久化排行榜数据到数据库
-            Set<ZSetOperations.TypedTuple<String>> rankData = redisTemplate.opsForZSet().reverseRangeWithScores(CacheConsts.BOOK_VISIT_RANK_CACHE_NAME, 0, 29);
-            if (!CollectionUtils.isEmpty(rankData)) {
-                for (ZSetOperations.TypedTuple<String> tuple : rankData) {
-                    Long id = Long.valueOf(tuple.getValue());
-                    BookInfo bookInfo = bookInfoMapper.selectById(id);
-                    if (bookInfo != null) {
-                        bookInfo.setVisitCount(Long.valueOf(tuple.getScore().longValue()));
-                        bookInfoMapper.updateById(bookInfo);
-                    }
-                }
-            }
-        }
         return RestResp.ok();
     }
 
-    private boolean hasPersisted = false;
-
-    private boolean shouldPersistToDatabase() {
-        // 获取当前时间的分钟数
-        int currentMinute = LocalDateTime.now().getMinute();
-
-        // 如果分钟数为 0（即每小时的开始）且尚未持久化数据，则返回 true，表示应将排行榜数据持久化到数据库
-        if (currentMinute == 0 && !hasPersisted) {
-            hasPersisted = true;
-            return true;
-        } else if (currentMinute > 0) {
-            // 如果分钟数大于 0，重置 hasPersisted 为 false
-            hasPersisted = false;
+    @Scheduled(cron = "0 0 * * * ?") // 每小时执行一次
+    public void persistRankDataToDatabase() {
+        // 持久化排行榜数据到数据库
+        Set<ZSetOperations.TypedTuple<String>> rankData = redisTemplate.opsForZSet().reverseRangeWithScores(CacheConsts.BOOK_VISIT_RANK_CACHE_NAME, 0, 29);
+        if (!CollectionUtils.isEmpty(rankData)) {
+            for (ZSetOperations.TypedTuple<String> tuple : rankData) {
+                Long id = Long.valueOf(tuple.getValue());
+                BookInfo bookInfo = bookInfoMapper.selectById(id);
+                if (bookInfo != null) {
+                    bookInfo.setVisitCount(Long.valueOf(tuple.getScore().longValue()));
+                    bookInfoMapper.updateById(bookInfo);
+                }
+            }
         }
-        return false;
     }
+
 
 
     @Override
