@@ -1,0 +1,43 @@
+ ①<div class="nextPageBox">
+            <a
+              style="background-color: rgba(255, 255, 255, 0.45)"
+              class="prev"
+              href="javascript:void(0)"
+              @click="preChapter(data.chapterInfo.bookId)"
+              >上一章</a
+            >
+            <a
+              style="background-color: rgba(255, 255, 255, 0.45)"
+              class="dir"
+              @click="BookContent1(data.chapterInfo.chapterId)"
+              href="javascript:void(0)"
+              >购买</a
+            >
+            <a
+              style="background-color: rgba(255, 255, 255, 0.45)"
+              class="next"
+              @click="nextChapter(data.chapterInfo.bookId)"
+              href="javascript:void(0)"
+              >下一章</a
+            >
+          </div>
+②import { getBookContent,getBookContent1, getPreChapterId, getNextChapterId } from "@/api/book";
+③  const BookContent1 = async (chapterId) => {
+      const {data} = await getBookContent1(chapterId);
+      state.data = data;
+    }
+
+④return {
+      ...toRefs(state),
+      bookDetail,
+      BookContent1,
+      preChapter,
+      nextChapter,
+    };
+
+
+
+在book.js中 
+export function getBookContent1(chapterId) {
+    return request.get(`/front/book/content1/${chapterId}`);
+}
